@@ -52,3 +52,9 @@ python customer_app.py
 }
 
 {"name": "Test", "phone": "9999999999", "password": "12345"}
+
+
+Теперь все команды buildozer нужно будет выполнять, предварительно активируя это окружение командой source ~/buildozer-env/bin/activate.
+
+\\wsl$\Ubuntu\home\kalgu
+

@@ -1,0 +1,289 @@
+# =========================================================
+#  ПРИЛОЖЕНИЕ ПЕРСОНАЛА — ЕДИНЫЙ KV
+# =========================================================
+
+# ============ ДИНАМИЧЕСКИЕ КЛАССЫ (должны быть ПЕРВЫМИ) ============
+
+<SOrderRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(80)
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: ('Заказ #' + str(root.item['id']) + ' — ' + root.item['status'] + ' — ' + str(root.item['total']) + '₽') if root.item else ''
+        Label:
+            text: ('Клиент ID: ' + str(root.item['user_id']) + ' / ' + root.item['delivery_method']) if root.item else ''
+            font_size: 12
+    Button:
+        text: 'Статус'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('orders').change_status(root.item)
+    Button:
+        text: 'Детали'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('orders').show_details(root.item)
+    Button:
+        text: 'Удалить'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('orders').delete_order(root.item)
+
+
+<SMenuRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(60)
+    Label:
+        text: (root.item['name'] + ' / ' + root.item['category'] + ' / ' + str(root.item['price']) + '₽') if root.item else ''
+    Button:
+        text: 'Удалить'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('menu').delete_item(root.item)
+
+
+<SUserRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(60)
+    Label:
+        text: ('#' + str(root.item['id']) + ' ' + root.item['name'] + ' (' + root.item['phone'] + ') бонусов: ' + str(root.item['balance_points'])) if root.item else ''
+    Button:
+        text: 'Удалить'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('users').delete_user(root.item)
+
+
+<SPromoRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(70)
+    Label:
+        text: (root.item['description'] + '  −' + str(root.item['discount']) + '%  ' + root.item['status']) if root.item else ''
+    Button:
+        text: 'Удалить'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('promos').delete_promo(root.item)
+
+
+<SLoyaltyRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(50)
+    Label:
+        text: (root.item['operation_type'] + '  ' + str(root.item['points']) + ' б.  ' + root.item['date'][:10]) if root.item else ''
+
+
+<SFavRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(55)
+    Label:
+        text: ('Блюдо ID: ' + str(root.item['menu_item_id']) + '  Добавлено: ' + root.item['added_date'][:10]) if root.item else ''
+    Button:
+        text: 'Удалить'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('favs').delete_fav(root.item)
+
+
+# ============ ЭКРАНЫ ============
+
+<StaffHome>:
+    name: 'home'
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 15
+        Label:
+            text: 'Панель персонала'
+            font_size: 28
+            size_hint_y: 0.2
+        Button:
+            text: 'Заказы'
+            on_release: app.root.current = 'orders'
+        Button:
+            text: 'Меню'
+            on_release: app.root.current = 'menu'
+        Button:
+            text: 'Пользователи'
+            on_release: app.root.current = 'users'
+        Button:
+            text: 'Акции'
+            on_release: app.root.current = 'promos'
+        Button:
+            text: 'Бонусы'
+            on_release: app.root.current = 'loyalty'
+        Button:
+            text: 'Избранное'
+            on_release: app.root.current = 'favs'
+
+
+<StaffOrders>:
+    name: 'orders'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Назад'
+                on_release: app.root.current = 'home'
+            Button:
+                text: 'Обновить'
+                on_release: root.load_orders()
+        RecycleView:
+            viewclass: 'SOrderRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(80)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+
+<StaffMenu>:
+    name: 'menu'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Назад'
+                on_release: app.root.current = 'home'
+            Button:
+                text: 'Добавить'
+                on_release: root.add_item()
+            Button:
+                text: 'Обновить'
+                on_release: root.load_menu()
+        RecycleView:
+            viewclass: 'SMenuRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(60)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+
+<StaffUsers>:
+    name: 'users'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Назад'
+                on_release: app.root.current = 'home'
+            Button:
+                text: 'Обновить'
+                on_release: root.load_users()
+        RecycleView:
+            viewclass: 'SUserRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(60)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+
+<StaffPromos>:
+    name: 'promos'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Назад'
+                on_release: app.root.current = 'home'
+            Button:
+                text: 'Создать'
+                on_release: root.add_promo()
+            TextInput:
+                id: uid
+                hint_text: 'user_id'
+                input_filter: 'int'
+            Button:
+                text: 'Загрузить'
+                on_release: root.load_promos()
+        RecycleView:
+            viewclass: 'SPromoRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(70)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+
+<StaffLoyalty>:
+    name: 'loyalty'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Назад'
+                on_release: app.root.current = 'home'
+            TextInput:
+                id: uid
+                hint_text: 'user_id'
+                input_filter: 'int'
+            Button:
+                text: 'Загрузить'
+                on_release: root.load_loyalty()
+            Button:
+                text: 'Начислить'
+                on_release: root.add_points()
+        RecycleView:
+            viewclass: 'SLoyaltyRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(50)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+
+<StaffFavs>:
+    name: 'favs'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Назад'
+                on_release: app.root.current = 'home'
+            TextInput:
+                id: uid
+                hint_text: 'user_id'
+                input_filter: 'int'
+            Button:
+                text: 'Загрузить'
+                on_release: root.load_favs()
+        RecycleView:
+            viewclass: 'SFavRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(55)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'

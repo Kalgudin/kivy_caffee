@@ -1,0 +1,371 @@
+# =========================================================
+#  КЛИЕНТ — ЕДИНЫЙ KV-ФАЙЛ
+#  ВАЖНО: все динамические классы <XxxRow@BoxLayout>
+#  объявлены СТРОГО до экранов, которые их используют.
+# =========================================================
+
+# ============ ДИНАМИЧЕСКИЕ КЛАССЫ ============
+
+<MenuRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(70)
+    Label:
+        text: (root.item['name'] if root.item else '') + '  ' + (str(root.item['price']) + '₽' if root.item else '')
+        halign: 'left'
+        valign: 'middle'
+        text_size: self.size
+    Button:
+        text: '+'
+        size_hint_x: None
+        width: dp(50)
+        on_release: app.root.get_screen('menu').add_to_cart(root.item)
+    Button:
+        text: '♡'
+        size_hint_x: None
+        width: dp(50)
+        on_release: app.root.get_screen('menu').add_favorite(root.item)
+
+
+<CartRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(50)
+    Label:
+        text: (root.item['name'] + ' x' + str(root.item['qty'])) if root.item else ''
+    Label:
+        text: (str(root.item['price'] * root.item['qty']) + '₽') if root.item else ''
+    Button:
+        text: '−'
+        size_hint_x: None
+        width: dp(50)
+        on_release: app.root.get_screen('cart').remove_item(root.item)
+
+
+<OrderRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(60)
+    Label:
+        text: ('Заказ #' + str(root.item['id']) + '  ' + root.item['status'] + '  ' + str(root.item['total']) + '₽') if root.item else ''
+    Button:
+        text: 'Детали'
+        size_hint_x: None
+        width: dp(90)
+        on_release: app.root.get_screen('orders').show_details(root.item)
+
+
+<FavRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(55)
+    Label:
+        text: ('ID блюда: ' + str(root.item['menu_item_id'])) if root.item else ''
+    Button:
+        text: 'Удалить'
+        size_hint_x: None
+        width: dp(100)
+        on_release: app.root.get_screen('favorites').delete_fav(root.item)
+
+
+<PromoRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(70)
+    Label:
+        text: (root.item['description'] + '  −' + str(root.item['discount']) + '%  ' + root.item['status']) if root.item else ''
+    Button:
+        text: 'Удалить'
+        size_hint_x: None
+        width: dp(100)
+        on_release: app.root.get_screen('promotions').delete_promo(root.item)
+
+
+<LoyaltyRow@BoxLayout>:
+    item: None
+    size_hint_y: None
+    height: dp(50)
+    Label:
+        text: (root.item['operation_type'] + '  ' + str(root.item['points']) + ' б.  ' + root.item['date'][:10]) if root.item else ''
+
+
+# ============ ЭКРАНЫ ============
+
+<LoginScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 15
+        Label:
+            text: 'Вход в приложение'
+            font_size: 28
+            size_hint_y: 0.2
+        TextInput:
+            id: phone
+            hint_text: 'Телефон'
+            input_filter: 'int'
+            multiline: False
+            size_hint_y: None
+            height: 50
+        TextInput:
+            id: password
+            hint_text: 'Пароль'
+            password: True
+            multiline: False
+            size_hint_y: None
+            height: 50
+        Button:
+            text: 'Войти'
+            size_hint_y: None
+            height: 55
+            on_release: root.do_login()
+        Button:
+            text: 'Регистрация'
+            size_hint_y: None
+            height: 55
+            on_release: root.do_register()
+        Label:
+            id: msg
+            text: ''
+            color: 1, 0, 0, 1
+            size_hint_y: None
+            height: 40
+
+
+<RegisterScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 20
+        spacing: 15
+        Label:
+            text: 'Регистрация'
+            font_size: 28
+            size_hint_y: 0.15
+        TextInput:
+            id: name
+            hint_text: 'Имя'
+            multiline: False
+            size_hint_y: None
+            height: 50
+        TextInput:
+            id: phone
+            hint_text: 'Телефон'
+            input_filter: 'int'
+            multiline: False
+            size_hint_y: None
+            height: 50
+        TextInput:
+            id: password
+            hint_text: 'Пароль'
+            password: True
+            multiline: False
+            size_hint_y: None
+            height: 50
+        Button:
+            text: 'Создать аккаунт'
+            size_hint_y: None
+            height: 55
+            on_release: root.do_register()
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: 55
+            on_release: app.root.current = 'login'
+        Label:
+            id: msg
+            text: ''
+            color: 1, 0, 0, 1
+
+
+<MenuScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: None
+            height: 50
+            Button:
+                text: 'Избранное'
+                on_release: app.root.current = 'favorites'
+            Button:
+                text: 'Заказы'
+                on_release: app.root.current = 'orders'
+            Button:
+                text: 'Акции'
+                on_release: app.root.current = 'promotions'
+            Button:
+                text: 'Бонусы'
+                on_release: app.root.current = 'loyalty'
+            Button:
+                text: 'Выход'
+                on_release: root.logout()
+        Label:
+            text: 'Меню ресторана'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+        RecycleView:
+            viewclass: 'MenuRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(70)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+
+
+<CartScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        Label:
+            text: 'Корзина'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+        RecycleView:
+            viewclass: 'CartRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(50)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Label:
+            id: total
+            text: 'Итого: 0₽'
+            size_hint_y: None
+            height: 40
+        Spinner:
+            id: delivery
+            text: 'pickup'
+            values: ['pickup', 'delivery']
+            size_hint_y: None
+            height: 45
+        Button:
+            text: 'Оформить заказ'
+            size_hint_y: None
+            height: 55
+            on_release: root.place_order()
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: 45
+            on_release: app.root.current = 'menu'
+
+
+<OrdersScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Мои заказы'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+        RecycleView:
+            viewclass: 'OrderRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(60)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Button:
+            text: 'Обновить'
+            size_hint_y: None
+            height: 45
+            on_release: root.load_orders()
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: 45
+            on_release: app.root.current = 'menu'
+
+
+<FavoritesScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Избранное'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+        RecycleView:
+            viewclass: 'FavRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(55)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Button:
+            text: 'Обновить'
+            size_hint_y: None
+            height: 45
+            on_release: root.load_favorites()
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: 45
+            on_release: app.root.current = 'menu'
+
+
+<PromotionsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Мои акции'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+        RecycleView:
+            viewclass: 'PromoRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(70)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Button:
+            text: 'Обновить'
+            size_hint_y: None
+            height: 45
+            on_release: root.load_promotions()
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: 45
+            on_release: app.root.current = 'menu'
+
+
+<LoyaltyScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Бонусная программа'
+            font_size: 24
+            size_hint_y: None
+            height: 40
+        RecycleView:
+            viewclass: 'LoyaltyRow'
+            data: root.rv_data
+            RecycleBoxLayout:
+                default_size: None, dp(50)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+        Button:
+            text: 'Обновить'
+            size_hint_y: None
+            height: 45
+            on_release: root.load_loyalty()
+        Button:
+            text: 'Назад'
+            size_hint_y: None
+            height: 45
+            on_release: app.root.current = 'menu'
